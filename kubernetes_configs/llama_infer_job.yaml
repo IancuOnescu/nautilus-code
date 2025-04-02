@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: llama3-quick-infer
+spec:
+  template:
+    spec:
+      # Container that pulls the code
+      initContainers:
+      - name: install
+        image: busybox:1.36
+        command: ['wget', 'https://githubraw.com/IancuOnescu/nautilus-code/master/playground_scripts/quick_llama_infer.py', '-O', '/work-dir/quick_llama_infer.py']
+        # -------- Storage --------
+        volumeMounts:
+        - name: workdir
+          mountPath: /work-dir
+        # -------- Resources --------
+        resources:
+          limits:
+            memory: "1G"
+            cpu: "1"
+          requests:
+            memory: "1G"
+            cpu: "1"
+      # These are are the main containers
+      containers:
+        - name: program
+          image: python:latest
+          command: ['python', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test.csv', '-of', '/test-data/output.txt']
+          # command: ['tail', '-f', '/dev/null']
+          # -------- Storage --------
+          volumeMounts:
+          - name: iancu-test-vol
+            mountPath: /test-data
+          - name: workdir
+            mountPath: /work-dir
+          # -------- Resources --------
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+              memory: "10G"
+              cpu: "1"
+            requests:
+              nvidia.com/gpu: "1"
+              memory: "10G"
+              cpu: "1"
+      # -------- Storage declaration --------
+      volumes:
+        - name: iancu-test-vol
+          persistentVolumeClaim:
+            claimName: iancu-test-vol
+        - name: workdir
+          emptyDir: {}
+      restartPolicy: Never
+  backoffLimit: 4
