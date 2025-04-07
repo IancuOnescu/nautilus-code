@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: llama3-quick-infer
+  name: llama3-quick-infer-small
 spec:
   template:
     spec:
@@ -26,11 +26,11 @@ spec:
       containers:
         - name: program
           image: huggingface/transformers-pytorch-gpu:latest
-          # command: ['python3', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test.csv', '-of', '/test-data/output.txt']
+          # command: ['python3', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test_3_samples.csv', '-of', '/test-data/output.txt', '-hf', '/test-data/huggingface_token.txt', '-m', '/test-data/Meta-Llama-3.1-8B-Instruct-Q6_K.gguf']
           command: ['tail', '-f', '/dev/null']
           # -------- Storage --------
           volumeMounts:
-          - name: iancu-test-vol
+          - name: iones-persistent-storage
             mountPath: /test-data
           - name: workdir
             mountPath: /work-dir
@@ -46,9 +46,9 @@ spec:
               cpu: "3"
       # -------- Storage declaration --------
       volumes:
-        - name: iancu-test-vol
+        - name: iones-persistent-storage
           persistentVolumeClaim:
-            claimName: iancu-test-vol
+            claimName: iones-persistent-storage
         - name: workdir
           emptyDir: {}
       restartPolicy: Never

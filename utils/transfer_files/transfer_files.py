@@ -109,18 +109,20 @@ def launch_pod():
 
 @log_potential_error
 def transfer_files(config):
-    command = "cd {path}; kubectl cp {podname}:{vol}/{src} {dest}"
+    command_pull = "cd {path}; kubectl cp {podname}:{vol}/{src} {dest}"
+    command_push = "cd {path}; kubectl cp {src} {podname}:{vol}/{dest}"
 
     for volume in config["volumes"]:
         for file in volume["files"]:
             if os.path.isabs(file["source"]):
                 path, src = os.path.split(file["source"])
                 dest = file["destination"]
+                cmd = command_push.format(path=path, podname=POD_NAME, vol=volume["name"], src=src, dest=dest)
             else:
                 path, dest = os.path.split(file["destination"])
                 src = file["source"]
+                cmd = command_pull.format(path=path, podname=POD_NAME, vol=volume["name"], src=src, dest=dest)
 
-            cmd = command.format(path=path, podname=POD_NAME, vol=volume["name"], src=src, dest=dest)
             output = run_ps_command(cmd)
             
             if output.returncode == 0:

@@ -35,12 +35,14 @@ def format_prompts(prompts):
 
 
 @log_potential_error
-def infer(prompts, hf_token):
+def infer(prompts, model_id, hf_token):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    logger.info(device)
+    logger.info("device: {d}".format(device))
 
-    model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    #model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     model = transformers.AutoModel.from_pretrained(model_id, token=hf_token)
+
+    logger.info("Model loaded or downloaded!")
 
     pipeline = transformers.pipeline(
         "text-generation",
@@ -49,11 +51,12 @@ def infer(prompts, hf_token):
         device_map=device,
     )
 
+    logger.info("Prompts formated")
     messages = format_prompts(prompts)
 
     outputs = pipeline(
         messages,
-        max_new_tokens=512,
+        max_new_tokens=1024,
     )
 
     return outputs
@@ -88,6 +91,7 @@ def parse_args(argv):
     parser.add_argument("-dp", "--data_path", action="store", dest="data_path", required=True, type=str, help="Path to the data file")
     parser.add_argument("-of", "--output_file", action="store", dest="output_path", required=True, type=str, help="Path for the output file")
     parser.add_argument("-hf", "--hf_token", action="store", dest="hf_token", required=True, type=str, help="Huggingface token file")
+    parser.add_argument("-m", "--model_id", action="store", dest="model_id", required=True, type=str, help="Model id or path to local model")
 
     args = parser.parse_args(argv)
 
@@ -108,7 +112,7 @@ def main():
     with open(args.hf_token, "r") as file:
         hf_token = file.readline()
     print(hf_token)
-    output = infer(prompts, hf_token)
+    output = infer(prompts, args.model_id, hf_token)
     logger.info("Inference successful")
 
     with open(args.output_path, "w") as file:
