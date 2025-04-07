@@ -1,7 +1,7 @@
 volumes: 
-  - name: iancu-test-vol
+  - name: iones-persistent-storage
     files:
       - source: P:\Disertation\data\processed\VAST_5_SAMPLES\vast_test.csv
         destination: vast_test_3_samples.csv
-      # - source: P:\UIC\Nautilus\nautilus-code\utils\transfer_files\huggingface_token.txt
-      #   destination: huggingface_token.txt
+      - source: P:\UIC\Nautilus\nautilus-code\utils\transfer_files\huggingface_token.txt
+        destination: huggingface_token.txt

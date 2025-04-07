@@ -26,8 +26,8 @@ spec:
       containers:
         - name: program
           image: huggingface/transformers-pytorch-gpu:latest
-          # command: ['python3', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test_3_samples.csv', '-of', '/test-data/output.txt', '-hf', '/test-data/huggingface_token.txt', '-m', '/test-data/Meta-Llama-3.1-8B-Instruct-Q6_K.gguf']
-          command: ['tail', '-f', '/dev/null']
+          command: ['python3', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test_3_samples.csv', '-of', '/test-data/output.txt', '-hf', '/test-data/huggingface_token.txt', '-m', '/test-data/Meta-Llama-3.1-8B-Instruct-Q6_K.gguf']
+          # command: ['tail', '-f', '/dev/null']
           # -------- Storage --------
           volumeMounts:
           - name: iones-persistent-storage

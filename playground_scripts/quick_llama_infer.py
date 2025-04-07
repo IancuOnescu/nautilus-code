@@ -37,7 +37,7 @@ def format_prompts(prompts):
 @log_potential_error
 def infer(prompts, model_id, hf_token):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    logger.info("device: {d}".format(device))
+    logger.info("device: {d}".format(d=device))
 
     #model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     model = transformers.AutoModel.from_pretrained(model_id, token=hf_token)
