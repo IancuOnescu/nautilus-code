@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Logs
+*/*.log
+utils/transfer_files/pod_config.yaml
+utils/transfer_files/huggingface_token.txt
+kubernetes_configs/*.txt

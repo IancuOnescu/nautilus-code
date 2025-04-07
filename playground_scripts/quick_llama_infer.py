@@ -19,19 +19,32 @@ Please provide a step by step analysis using the following format:
 Explanation: [insert step-by-step analysis here] 
 Answer and Confidence (0-100): [just the answer] [just the confidence numerical number]%" """
 
+
+def log_potential_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            logger.exception("Error")
+    return wrapper
+
+
 def format_prompts(prompts):
     temp = [{"role": "system", "content": "You are a helpful bot performs text analysis"}]
     return temp + [{"role": "user", "content": prompt} for prompt in prompts]
 
-def infer(prompts):
+
+@log_potential_error
+def infer(prompts, hf_token):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     logger.info(device)
 
     model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    model = transformers.AutoModel.from_pretrained(model_id, token=hf_token)
 
     pipeline = transformers.pipeline(
         "text-generation",
-        model=model_id,
+        model=model,
         model_kwargs={"torch_dtype": torch.bfloat16},
         device_map=device,
     )
@@ -45,10 +58,12 @@ def infer(prompts):
 
     return outputs
 
+
 def create_prompts(text):
     return PROMPT_TEMPLATE.format(text=text)
 
 
+@log_potential_error
 def get_prompts(file_path):
     data = pd.read_csv(file_path)
 
@@ -72,25 +87,35 @@ def parse_args(argv):
     parser.add_argument("-lf", "--logfile_path", action="store", dest="logfile_path", required=True, type=str, help="Path for logfile")
     parser.add_argument("-dp", "--data_path", action="store", dest="data_path", required=True, type=str, help="Path to the data file")
     parser.add_argument("-of", "--output_file", action="store", dest="output_path", required=True, type=str, help="Path for the output file")
+    parser.add_argument("-hf", "--hf_token", action="store", dest="hf_token", required=True, type=str, help="Huggingface token file")
 
     args = parser.parse_args(argv)
 
     return args
 
 
-if __name__ == "__main__":
+@log_potential_error
+def main():
     args = parse_args(sys.argv)
     init_logging_config(args.logfile_path)
-    logger.info("Logging file init")
+    logger.info("Logging file init successful")
 
     logger.info("Creating prompts")
     prompts = get_prompts(args.data_path)
-    logger.info("Prompts created")
+    logger.info("Prompts creation successful")
 
     logger.info("Feeding prompts into the model")
-    output = infer(prompts)
+    with open(args.hf_token, "r") as file:
+        hf_token = file.readline()
+    print(hf_token)
+    output = infer(prompts, hf_token)
+    logger.info("Inference successful")
 
     with open(args.output_path, "w") as file:
         file.write(repr(output))
+
+
+if __name__ == "__main__":
+    main()
 
     

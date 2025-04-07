@@ -17,17 +17,17 @@ spec:
         # -------- Resources --------
         resources:
           limits:
-            memory: "1G"
+            memory: "2G"
             cpu: "1"
           requests:
-            memory: "1G"
+            memory: "2G"
             cpu: "1"
       # These are are the main containers
       containers:
         - name: program
-          image: python:latest
-          command: ['python', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test.csv', '-of', '/test-data/output.txt']
-          # command: ['tail', '-f', '/dev/null']
+          image: huggingface/transformers-pytorch-gpu:latest
+          # command: ['python3', '/work-dir/quick_llama_infer.py', '-lf', '/test-data/logs.txt', '-dp', '/test-data/vast_test.csv', '-of', '/test-data/output.txt']
+          command: ['tail', '-f', '/dev/null']
           # -------- Storage --------
           volumeMounts:
           - name: iancu-test-vol
@@ -38,12 +38,12 @@ spec:
           resources:
             limits:
               nvidia.com/gpu: "1"
-              memory: "10G"
-              cpu: "1"
+              memory: "25G"
+              cpu: "3"
             requests:
               nvidia.com/gpu: "1"
-              memory: "10G"
-              cpu: "1"
+              memory: "25G"
+              cpu: "3"
       # -------- Storage declaration --------
       volumes:
         - name: iancu-test-vol
@@ -52,4 +52,4 @@ spec:
         - name: workdir
           emptyDir: {}
       restartPolicy: Never
-  backoffLimit: 4
+  backoffLimit: 1

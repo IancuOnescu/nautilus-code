@@ -1,0 +1,7 @@
+volumes: 
+  - name: iancu-test-vol
+    files:
+      - source: logs.txt
+        destination: P:\UIC\Nautilus\playground\pulls\logs.txt
+      - source: second_test.txt
+        destination: P:\UIC\Nautilus\playground\pulls\second_test.txt
