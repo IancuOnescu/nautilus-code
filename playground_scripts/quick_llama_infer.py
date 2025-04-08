@@ -8,12 +8,14 @@ import pandas as pd
 import transformers
 import torch
 
+#from llama_cpp import Llama
+
 logger = logging.getLogger("LLAMA_INFER")
 logger.setLevel(logging.DEBUG)
 
-PROMPT_TEMPLATE = """Given the following text {text}
+PROMPT_TEMPLATE = """Given the following text {text}. What are the main topics of this text?
 
-Please answer this question and provide your confidence level for each target. Note that the confidence level indicates the degree of certainty you have about your answer and is represented as a percentage. 
+Please answer this question and provide your confidence level for each topic. Note that the confidence level indicates the degree of certainty you have about your answer and is represented as a percentage. 
 
 Please provide a step by step analysis using the following format: 
 Explanation: [insert step-by-step analysis here] 
@@ -39,24 +41,44 @@ def infer(prompts, model_id, hf_token):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     logger.info("device: {d}".format(d=device))
 
-    #model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model = transformers.AutoModel.from_pretrained(model_id, token=hf_token)
+    bnb_config = transformers.BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+    )
+
+    model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_id, 
+        token=hf_token,
+        quantization_config=bnb_config
+    )
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        model_id, 
+        token=hf_token, 
+        max_length=1024
+    )
 
     logger.info("Model loaded or downloaded!")
 
     pipeline = transformers.pipeline(
         "text-generation",
         model=model,
-        model_kwargs={"torch_dtype": torch.bfloat16},
+        #model_kwargs={"torch_dtype": torch.bfloat16},
         device_map=device,
+        tokenizer=tokenizer,
+        pad_token_id=tokenizer.eos_token_id
     )
 
+    #messages = format_prompts(prompts)
     logger.info("Prompts formated")
-    messages = format_prompts(prompts)
-
+    
     outputs = pipeline(
-        messages,
+        prompts,
         max_new_tokens=1024,
+        batch_size=1
     )
 
     return outputs
@@ -111,7 +133,6 @@ def main():
     logger.info("Feeding prompts into the model")
     with open(args.hf_token, "r") as file:
         hf_token = file.readline()
-    print(hf_token)
     output = infer(prompts, args.model_id, hf_token)
     logger.info("Inference successful")
 
