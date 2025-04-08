@@ -19,7 +19,7 @@ Please answer this question and provide your confidence level for each topic. No
 
 Please provide a step by step analysis using the following format: 
 Explanation: [insert step-by-step analysis here] 
-Answer and Confidence (0-100): [just the answer] [just the confidence numerical number]%" """
+Conclusion - Answers and Confidences (0-100): [just the first topic] [just the confidence numerical number]%, [just the second topic] [just the confidence numerical number]%, and so on """
 
 
 def log_potential_error(func):
@@ -69,7 +69,8 @@ def infer(prompts, model_id, hf_token):
         #model_kwargs={"torch_dtype": torch.bfloat16},
         device_map=device,
         tokenizer=tokenizer,
-        pad_token_id=tokenizer.eos_token_id
+        pad_token_id=tokenizer.eos_token_id,
+        return_full_text=False
     )
 
     #messages = format_prompts(prompts)
