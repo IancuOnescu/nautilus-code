@@ -38,7 +38,7 @@ def log_potential_error(func):
 def format_prompts(prompts):
     # temp = [{"role": "system", "content": "You are a helpful bot performs text analysis"}]
     # return temp + [{"role": "user", "content": prompt} for prompt in prompts]
-    [[{"role": "system", "content": "You are a helpful bot performs text analysis"}, {"role": "user", "content": prompt}] for prompt in prompts]
+    return [[{"role": "system", "content": "You are a helpful bot performs text analysis"}, {"role": "user", "content": prompt}] for prompt in prompts]
 
 
 @log_potential_error
@@ -78,11 +78,11 @@ def infer(prompts, model_id, hf_token):
         model_kwargs={
             "temperature": 0.000001,
             "do_sample": False,  # False
-            "num_beams": 1      # additional thing
+            "num_beams": 1
         }
     )
 
-    #messages = format_prompts(prompts)
+    messages = format_prompts(prompts)
     logger.info("Prompts formated")
 
     terminators = [
@@ -91,7 +91,8 @@ def infer(prompts, model_id, hf_token):
     ]  
     
     outputs = pipeline(
-        prompts,
+        #prompts,
+        messages,
         max_new_tokens=1024,
         batch_size=1,
         eos_token_id=terminators
