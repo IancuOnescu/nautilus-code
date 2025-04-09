@@ -19,7 +19,11 @@ Please answer this question and provide your confidence level for each topic. No
 
 Please provide a step by step analysis using the following format: 
 Explanation: [insert step-by-step analysis here] 
-Conclusion - Answers and Confidences (0-100): [just the first topic] [just the confidence numerical number]%, [just the second topic] [just the confidence numerical number]%, and so on """
+Conclusion - Answers and Confidences (0-100): 
+    - [just the topic] [just the confidence numerical number]%, 
+    - [just the topic] [just the confidence numerical number]%,
+    - and so on
+Do not include any other information other than the explanation and conclusion mentioned above."""
 
 
 def log_potential_error(func):
@@ -32,8 +36,9 @@ def log_potential_error(func):
 
 
 def format_prompts(prompts):
-    temp = [{"role": "system", "content": "You are a helpful bot performs text analysis"}]
-    return temp + [{"role": "user", "content": prompt} for prompt in prompts]
+    # temp = [{"role": "system", "content": "You are a helpful bot performs text analysis"}]
+    # return temp + [{"role": "user", "content": prompt} for prompt in prompts]
+    [[{"role": "system", "content": "You are a helpful bot performs text analysis"}, {"role": "user", "content": prompt}] for prompt in prompts]
 
 
 @log_potential_error
@@ -69,17 +74,27 @@ def infer(prompts, model_id, hf_token):
         #model_kwargs={"torch_dtype": torch.bfloat16},
         device_map=device,
         tokenizer=tokenizer,
-        pad_token_id=tokenizer.eos_token_id,
-        return_full_text=False
+        return_full_text=False,
+        model_kwargs={
+            "temperature": 0.000001,
+            "do_sample": False,  # False
+            "num_beams": 1      # additional thing
+        }
     )
 
     #messages = format_prompts(prompts)
     logger.info("Prompts formated")
+
+    terminators = [
+        pipeline.tokenizer.eos_token_id,
+        pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>")
+    ]  
     
     outputs = pipeline(
         prompts,
         max_new_tokens=1024,
-        batch_size=1
+        batch_size=1,
+        eos_token_id=terminators
     )
 
     return outputs
